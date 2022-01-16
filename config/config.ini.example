@@ -1,0 +1,11 @@
+[Database]
+Driver =  mssql
+Server = localhost
+Port = 1433
+Database = somedb
+User = someuser
+Password = somepassword
+
+[Application]
+Environment = dev
+Port = 8080
