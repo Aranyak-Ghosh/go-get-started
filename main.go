@@ -69,11 +69,15 @@ func Follow(context *gorm.DB, follower string, following string) {
 	context.Model(&User{ID: follower}).Association("Follows").Append(&User{ID: following})
 }
 
-func QueryJoin(context *gorm.DB) []User {
+func QueryJoin(context *gorm.DB) ([]User, int64) {
 	var users []User
+	var count int64
 
-	context.Joins("JOIN user_follows on user_follows.user_id = users.id").Joins("JOIN users as followed on user_follows.follow_id = followed.id").Where("followed.Name like ?", "%Shailika%").Preload("Follows").Find(&users)
-	return users
+	query := context.Joins("JOIN user_follows on user_follows.user_id = users.id").Joins("JOIN users as followed on user_follows.follow_id = followed.id").Where("followed.name like ?", "%Shailika%").Preload("Follows").Model(&User{})
+
+	query.Count(&count)
+	query.Preload("Follows").Find(&users)
+	return users, count
 }
 
 func main() {
@@ -81,7 +85,9 @@ func main() {
 	Migrate(dbContext)
 	// Seed(dbContext)
 
-	users := QueryJoin(dbContext)
+	users, count := QueryJoin(dbContext)
 	fmt.Printf("%+v\n", users)
+	fmt.Printf("%v\n", count)
+
 	// Follow(dbContext, users[0].ID, users[1].ID)
 }
